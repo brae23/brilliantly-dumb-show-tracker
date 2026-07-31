@@ -1,5 +1,6 @@
 import argparse
 from pathlib import Path
+
 from ingestion.downloader import download_video
 from ingestion.transcriber import transcribe_video
 
@@ -22,9 +23,9 @@ def run_pipeline():
     downloaded_file = download_video(test_url, output_dir)
     print(f"Downloaded file to: {downloaded_file}")
 
-    print(f"Transcribing video file: {downloaded_file}")
+    print(f"Beginning transcription, alignment, and diarization of video file: {downloaded_file}")
     transcription = transcribe_video(downloaded_file)
-    print(f"Transcription completed. Output: {transcription}")
+    print(f"Transcription processing completed. Output: {transcription}")
 
 
 if __name__ == "__main__":

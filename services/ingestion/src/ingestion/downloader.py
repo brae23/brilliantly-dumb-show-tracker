@@ -1,5 +1,6 @@
-import yt_dlp
 from pathlib import Path
+
+import yt_dlp
 
 def download_video(url: str, output_dir: Path) -> Path:
     """
