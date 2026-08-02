@@ -16,7 +16,9 @@ def transcribe_video(video_file: Path) -> Path:
     Returns:
         Path: Path to the transcription json file.
     """
-    device = "cpu"
+    DEVICE = "cuda"
+    COMPUTE_TYPE = "float16"  # FP16 takes full advantage of RTX 4060 Tensor Cores
+    BATCH_SIZE = 16
     token = os.getenv("HF_TOKEN")
     if not token:
         raise ValueError(
@@ -29,22 +31,22 @@ def transcribe_video(video_file: Path) -> Path:
 
     print(f"Transcribing video file: {audio_path}")
     audio = whisperx.load_audio(audio_path)
-    model = whisperx.load_model("small", device, compute_type="int8")
-    result = model.transcribe(audio, batch_size=16)
+    model = whisperx.load_model("large-v2", DEVICE, compute_type=COMPUTE_TYPE)
+    result = model.transcribe(audio, batch_size=BATCH_SIZE)
     print(f"Transcription completed for video file: {audio_path}")
 
     print(f"Aligning transcription for video file: {audio_path}")
     language_code = result.get("language", "en")
     align_model, metadata = whisperx.load_align_model(
-        language_code=language_code, device=device
+        language_code=language_code, device=DEVICE
     )
     result = whisperx.align(
-        result["segments"], align_model, metadata, audio, device
+        result["segments"], align_model, metadata, audio, DEVICE
     )
     print(f"Alignment completed for video file: {audio_path}")
 
     print(f"Running speaker diarization for video file: {audio_path}")
-    diarize_model = DiarizationPipeline(device=device)
+    diarize_model = DiarizationPipeline(device=DEVICE)
     diarize_segments = diarize_model(audio, min_speakers=2)
     result = whisperx.assign_word_speakers(diarize_segments, result)
     print(f"Speaker diarization completed for video file: {audio_path}")
